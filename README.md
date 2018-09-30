@@ -21,6 +21,12 @@ First we set up libpam-net:
     $ pam-auth-update --enable libpam-net-usernet
     $ addgroup --system usernet
     $ adduser <myuser> usernet
+
+Note: this currently depends on an
+[unmerged patch to libpam-net](https://github.com/rd235/libpam-net/pull/1) as
+well as the
+[unreleased Debian package](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=909908))
+for libpam-net, both of these things are currently being worked on.
     
 Now whenever `<myuser>` logs in, or a service is started as them, it will be
 placed in a netns (cf. ip-netns(8)) corresponding to their username.
