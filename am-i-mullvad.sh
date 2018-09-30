@@ -28,7 +28,7 @@ mullvad_ip6="$(curl -6 -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip')
 
 dnsids=
 
-for i in $(seq 0 5); do
+for i in $(seq 0 3); do
     id=$(xxd -p -l16 < /dev/urandom)
     dnsids="$dnsids $id"
     curl -s "https://$id.dnsleak.am.i.mullvad.net/" > /dev/null 2>&1 || true
