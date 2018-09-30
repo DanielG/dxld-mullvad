@@ -108,7 +108,9 @@ cat /etc/wireguard/"$cfgname" \
 
 addrs="$(sed -rn 's/^Address *= *([0-9a-fA-F:/.,]+) *$/\1/ip' < /etc/wireguard/"$cfgname")"
 
+ip -netns "$nsname" link set dev lo up
 ip -netns "$nsname" link set dev "$ifname" up
+
 (
     IFS=','
     for addr in $addrs; do
