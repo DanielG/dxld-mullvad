@@ -15,9 +15,9 @@ not support netns or operating on a pre-existing wg interface.
 Setup
 -----
 
-First we set up libpam-net:
+First we set up dependencies and libpam-net:
 
-    $ apt-get install libpam-net
+    $ apt-get install dateutils curl jq linux-headers-$(uname -r) wireguard-dkms wireguard-tools libpam-net
     $ pam-auth-update --enable libpam-net-usernet
     $ addgroup --system usernet
     $ adduser <myuser> usernet
