@@ -55,7 +55,7 @@ Security
 
 In order to make sure this whole setup works and to prevent leaks if something
 fails I like to check if connectivity is going through mullvad on login. The
-mullvad guys provide a convinient servive for this: https://am.i.mullvad.net and
+mullvad guys provide a convinient service for this: https://am.i.mullvad.net and
 I wrote a convinient shell wrapper for it: [am-i-mullvad.sh](am-i-mullvad.sh).
 
 To use it put it in your `.bash_profile` or simmilar shell startup script:
