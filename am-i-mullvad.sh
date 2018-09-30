@@ -14,12 +14,11 @@ not_on_mullvad() {
 echo -n 'Checking Mullvad...'
 
 # IP Leak check
-mullvad_ip="$(curl -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip')"
+mullvad_ip4="$(curl -4 -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip')"
+mullvad_ip6="$(curl -6 -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip')"
 
-if [ "$mullvad_ip" != 'true' ]; then
-        not_on_mullvad "- IP Leaking"
-fi
-
+[ "$mullvad_ip4" = 'true' ] || not_on_mullvad "- IPv4 Leaking"
+[ "$mullvad_ip6" = 'true' ] || not_on_mullvad "- IPv6 Leaking"
 
 # DNS Leak check
 
