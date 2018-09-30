@@ -113,6 +113,7 @@ ip -netns "$nsname" link set dev "$ifname" up
 )
 
 ip -netns "$nsname" route add default dev "$ifname"
+ip -netns "$nsname" -6 route add default dev "$ifname"
 }
 
 
