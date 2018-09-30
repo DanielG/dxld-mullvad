@@ -1,14 +1,44 @@
 #!/bin/sh
 
-echo -n 'Checking Mullvad...'
-am_i="$(curl -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip')"
+not_on_mullvad() {
+    echo>&2
+    echo>&2
+    echo "!!! NOT ON MULLVAD !!!" >&2
+    echo "$1">&2
+    echo>&2
+    sleep 3
+    exit 123
+}
 
-if [ "$am_i" != 'true' ]; then
-        echo
-        echo
-        echo "!!! NOT ON MULLVAD !!!" >&2
-        echo
-        sleep 3
-        exit 123
+
+echo -n 'Checking Mullvad...'
+
+# IP Leak check
+mullvad_ip="$(curl -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip')"
+
+if [ "$mullvad_ip" != 'true' ]; then
+        not_on_mullvad "- IP Leaking"
 fi
+
+
+# DNS Leak check
+
+dnsids=
+
+for i in $(seq 0 5); do
+    id=$(xxd -p -l16 < /dev/urandom)
+    dnsids="$dnsids $id"
+    curl -s "https://$id.dnsleak.am.i.mullvad.net/" > /dev/null 2>&1 || true
+    sleep 0.1
+done
+
+for i in $dnsids; do
+    mullvad_dns="$(curl -s --max-time 10 https://am.i.mullvad.net/dnsleak/$id \
+        | jq '[ .[] | .mullvad_dns ] | all')"
+
+    if [ "$mullvad_dns" = 'false' ]; then
+            not_on_mullvad "- DNS Leaking"
+    fi
+done
+
 echo 'OK'
