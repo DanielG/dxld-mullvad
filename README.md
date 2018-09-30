@@ -37,6 +37,17 @@ Next we provision the wireguard configs:
 
 This will ask you for your mullvad account number, so keep that ready.
 
+We're almost done, now we setup `resolv.conf` to prevent DNS leaks:
+
+    $ mkdir -p /etc/netns/<myuser>
+    $ printf '%s\n' '# Mullvad DNS' 193.138.219.228 > /etc/netns/<myuser>/resolv.conf
+    $ chattr +i /etc/netns/<myuser>/resolv.conf
+
+I do `chattr +i` to prevent resolvconf from meddling with this config. I suppose
+it would be possible just to change the resolvconf configuration to get it
+seperated from the main system, but without changes it will just use the DNS of
+the rest of the system.
+
 Finally to start the mullvad wireguard interface you should use the following
 command:
 
