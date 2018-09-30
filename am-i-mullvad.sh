@@ -10,6 +10,10 @@ not_on_mullvad() {
     exit 123
 }
 
+MULLVAD_ACCOUNT=
+if [ -r "$HOME"/.mullvad-account ]; then
+        MULLVAD_ACCOUNT="$(cat "$HOME"/.mullvad-account)"
+fi
 
 echo -n 'Checking Mullvad...'
 
@@ -41,3 +45,22 @@ for i in $dnsids; do
 done
 
 echo 'OK'
+
+
+if [ -n "$MULLVAD_ACCOUNT" ]; then
+    expiry="$(curl -s -X POST https://api.mullvad.net/rpc/ \
+         -H 'content-type: application/json;' \
+         --data '{ "jsonrpc": "2.0"
+                 , "method": "get_expiry"
+                 , "params": { "account_token": "'"$MULLVAD_ACCOUNT"'" }
+                 , "id": 1
+                 }' \
+    | jq -r '.result')"
+
+
+    if which dateutils.ddiff > /dev/null 2>&1; then
+        dateutils.ddiff now "$expiry" -f 'Expires in %ddays %Hhours.' >&2
+    else
+        printf 'Expires on %s\n' "$(date -d "$expiry")" >&2
+    fi
+fi

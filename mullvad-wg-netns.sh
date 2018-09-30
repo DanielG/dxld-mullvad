@@ -17,6 +17,10 @@ die() {
 provision() {
 umask 077
 
+ACCOUNT=
+if [ -r "$HOME"/.mullvad-account ]; then
+        ACCOUNT="$(cat "$HOME"/.mullvad-account)"
+fi
 if [ -z "$ACCOUNT" ]; then
         printf '[?] Please enter your Mullvad account number: '
         read -r ACCOUNT
