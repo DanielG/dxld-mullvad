@@ -31,9 +31,10 @@ dnsids=
 for i in $(seq 0 3); do
     id=$(xxd -p -l16 < /dev/urandom)
     dnsids="$dnsids $id"
-    curl -s "https://$id.dnsleak.am.i.mullvad.net/" > /dev/null 2>&1 || true
-    sleep 0.1
+    (curl -s "https://$id.dnsleak.am.i.mullvad.net/" > /dev/null 2>&1 || true)&
 done
+
+wait
 
 for i in $dnsids; do
     mullvad_dns="$(curl -s --max-time 10 https://am.i.mullvad.net/dnsleak/$id \
