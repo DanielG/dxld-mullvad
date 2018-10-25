@@ -88,6 +88,26 @@ curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
     mv "${conf}.tmp" "${conf}"
 done
 
+
+expiry="$(curl -s -X POST https://api.mullvad.net/rpc/ \
+     -H 'content-type: application/json;' \
+     --data '{ "jsonrpc": "2.0"
+             , "method": "get_expiry"
+             , "params": { "account_token": "'"$ACCOUNT"'" }
+             , "id": 1
+             }' \
+| jq -r '.result')"
+
+printf '%s\n' "$expiry" > ~/.mullvad-expiry
+
+echo; echo
+if which dateutils.ddiff > /dev/null 2>&1; then
+    dateutils.ddiff now "$expiry" -f 'Account expires in %ddays %Hhours.' >&2
+else
+    printf 'Account expires on %s\n' "$(date -d "$expiry")" >&2
+fi
+
+echo; echo
 echo "Please wait up to 60 seconds for your public key to be added to the servers."
 }
 

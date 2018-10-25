@@ -47,16 +47,9 @@ done
 echo 'OK'
 
 
-if [ -n "$MULLVAD_ACCOUNT" ]; then
-    expiry="$(curl -s -X POST https://api.mullvad.net/rpc/ \
-         -H 'content-type: application/json;' \
-         --data '{ "jsonrpc": "2.0"
-                 , "method": "get_expiry"
-                 , "params": { "account_token": "'"$MULLVAD_ACCOUNT"'" }
-                 , "id": 1
-                 }' \
-    | jq -r '.result')"
 
+if [ -r ~/.mullvad-expiry ]; then
+    expiry="$(cat ~/.mullvad-expiry)"
 
     if which dateutils.ddiff > /dev/null 2>&1; then
         dateutils.ddiff now "$expiry" -f 'Expires in %ddays %Hhours.' >&2
