@@ -15,7 +15,7 @@ if [ -r "$HOME"/.mullvad-account ]; then
         MULLVAD_ACCOUNT="$(cat "$HOME"/.mullvad-account)"
 fi
 
-echo -n 'Checking Mullvad...'
+echo -n 'Checking Mullvad...'>&2
 
 # IP Leak check
 mullvad_ip4="$(curl -4 -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip')"
@@ -44,8 +44,7 @@ for i in $dnsids; do
     fi
 done
 
-echo 'OK'
-
+echo 'OK'>&2
 
 
 if [ -r ~/.mullvad-expiry ]; then
