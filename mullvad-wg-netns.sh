@@ -31,16 +31,15 @@ echo "[+] Contacting Mullvad API for server locations."
 curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
  | jq -r \
    '( .countries[]
-      | [.name, (.cities[]
-        | [.name, (.relays[]
+      | (.cities[]
+        | (.relays[]
           | [.hostname, .public_key, .ipv4_addr_in])
-      ])
-    ])
+      )
+    )
     | flatten
     | join("\t")' \
- | while read -r country city hostname pubkey ipaddr; do
+ | while read -r hostname pubkey ipaddr; do
     code="${hostname%-wireguard}"
-    #loc="$city $country"
     addr="$ipaddr:51820"
 
     conf="/etc/wireguard/mullvad-${code}.conf"
