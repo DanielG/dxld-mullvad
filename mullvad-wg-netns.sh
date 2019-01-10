@@ -115,6 +115,14 @@ nsname=$1; shift
 cfgname=$1; shift
 ifname="wg-$nsname"
 
+if [ -e /sys/class/net/"$ifname" ]; then
+        ip link del dev "$ifname"
+fi
+
+if ip netns exec media [ -e /sys/class/net/"$ifname" ]; then
+        ip -netns "$nsname" link del dev "$ifname"
+fi
+
 ip link add "$ifname" type wireguard
 if ! [ -e /var/run/netns/"$nsname" ]; then
         ip netns add "$nsname"
