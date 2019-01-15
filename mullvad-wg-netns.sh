@@ -119,7 +119,7 @@ if [ -e /sys/class/net/"$ifname" ]; then
         ip link del dev "$ifname"
 fi
 
-if ip netns exec media [ -e /sys/class/net/"$ifname" ]; then
+if ip netns exec "$nsname" [ -e /sys/class/net/"$ifname" ]; then
         ip -netns "$nsname" link del dev "$ifname"
 fi
 
