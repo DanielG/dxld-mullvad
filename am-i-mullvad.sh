@@ -52,6 +52,8 @@ if [ $rv_ip4 -ne 0 ] && [ $rv_ip6 -ne 0 ]; then
         not_on_mullvad "- All IP checks errored"
 fi
 
+dnsleak_domain=$(curl -s --max-time 3 https://am.i.mullvad.net/config | jq -r '.dns_leak_domain' )
+
 # DNS Leak check
 
 dnsids=
@@ -59,7 +61,7 @@ dnsids=
 for i in $(seq 0 3); do
     id=$(xxd -p -l16 < /dev/urandom)
     dnsids="$dnsids $id"
-    (curl -s "https://$id.dnsleak.am.i.mullvad.net/" > /dev/null 2>&1 || true)&
+    (curl -s "https://$id.$dnsleak_domain/" > /dev/null 2>&1 || true)&
 done
 
 wait
