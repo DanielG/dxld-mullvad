@@ -76,4 +76,5 @@ To use it put it in your `.bash_profile` or simmilar shell startup script:
     EOF
 
 If we're not connected through mullvad it will print an error message and kill
-the shell after a short timeout so you can still get access if needed.
+the shell after a short timeout so you can still get access by Ctrl-C'ing the
+script if needed.
