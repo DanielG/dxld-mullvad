@@ -25,8 +25,8 @@ echo -n 'Checking Mullvad...'>&2
 
 # IP Leak check
 
-mullvad_ip4="$( timeout 3 curl -4 -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip' )"
-mullvad_ip6="$( timeout 3 curl -6 -s https://am.i.mullvad.net/json | jq '.mullvad_exit_ip' )"
+mullvad_ip4="$( curl -4 -s --max-time 3 https://am.i.mullvad.net/json | jq -r '.mullvad_exit_ip' )"
+mullvad_ip6="$( curl -6 -s --max-time 3 https://am.i.mullvad.net/json | jq -r '.mullvad_exit_ip' )"
 
 ip_check () {
         local var msg
