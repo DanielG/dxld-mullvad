@@ -70,7 +70,9 @@ for i in $dnsids; do
     mullvad_dns="$(curl -s --max-time 10 https://am.i.mullvad.net/dnsleak/$id \
         | jq '[ .[] | .mullvad_dns ] | all')"
 
-    if [ "$mullvad_dns" = 'false' ]; then
+    if [ "$mullvad_dns" = '' ]; then
+            warning "- DNS check errored"
+    elif [ "$mullvad_dns" = 'false' ]; then
             not_on_mullvad "- DNS Leaking"
     fi
 done
