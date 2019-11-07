@@ -44,7 +44,7 @@ curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
 
     conf="/etc/wireguard/mullvad-${code}.conf"
     if [ -z "$key" ] && [ -f "$conf" ]; then
-        key="$(sed -rn 's/^PrivateKey *= *([a-zA-Z0-9+/]{43}=) *$/\1/ip' <$conf)"
+        key="$(sed -rn 's/^PrivateKey *= *([a-zA-Z0-9+/]{43}=) *$/\1/ip' <"$conf")"
 
 	if [ -n "$key" ]; then
                 echo "[+] Using existing private key."
@@ -100,7 +100,7 @@ expiry="$(curl -s -X POST https://api.mullvad.net/rpc/ \
 printf '%s\n' "$expiry" > ~/.mullvad-expiry
 
 echo; echo
-if which dateutils.ddiff > /dev/null 2>&1; then
+if command -v dateutils.ddiff > /dev/null 2>&1; then
     dateutils.ddiff now "$expiry" -f 'Account expires in %ddays %Hhours.' >&2
 else
     printf 'Account expires on %s\n' "$(date -d "$expiry")" >&2
@@ -129,6 +129,8 @@ if ! [ -e /var/run/netns/"$nsname" ]; then
 fi
 
 ip link set "$ifname" netns "$nsname"
+
+# shellcheck disable=SC2002 # come on, < makes the pipeline read like shit
 cat /etc/wireguard/"$cfgname" \
         | grep -vi '^Address\|^DNS' \
         | ip netns exec "$nsname"  wg setconf "$ifname" /dev/stdin
