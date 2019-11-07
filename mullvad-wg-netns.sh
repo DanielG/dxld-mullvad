@@ -110,46 +110,72 @@ echo; echo
 echo "Please wait up to 60 seconds for your public key to be added to the servers."
 }
 
-init() {
+init () {
 nsname=$1; shift
 cfgname=$1; shift
-ifname="wg-$nsname"
+parentns=${parentns:-}
+wgifname="wg-$nsname"
 
-if [ -e /sys/class/net/"$ifname" ]; then
-        ip link del dev "$ifname"
+# [Note POSIX array trick]
+# Ok, this is a nasty POSIX shell trick, we use the _one_ array we have
+# access to, the args, aka "$@" to store the -netns option I optionally
+# want to pass to `ip` below. Since we're done with cmdline parsing at this
+# point that's totally fine, just a bit opaque. Hence this comment.
+#
+# You're welcome.
+if [ -z "$parentns" ]; then
+        set --
+else
+        set -- -netns "$parentns"
 fi
 
-if ip netns exec "$nsname" [ -e /sys/class/net/"$ifname" ]; then
-        ip -netns "$nsname" link del dev "$ifname"
+# Check for old wg interfaces in (1) current namespace,
+if [ -z "$parentns" ] && [ -e /sys/class/net/"$wgifname" ]; then
+        ip link del dev "$wgifname"
 fi
 
-ip link add "$ifname" type wireguard
+# (2) parent namespace and
+if ip netns exec "$parentns" [ -e /sys/class/net/"$wgifname" ]; then
+        ip -netns "$parentns" link del dev "$wgifname"
+fi
+
+# (3) target namespace.
+if ip netns exec "$nsname" [ -e /sys/class/net/"$wgifname" ]; then
+        ip -netns "$nsname" link del dev "$wgifname"
+fi
+
+# See [Note POSIX array trick] above.
+ip "$@" link add "$wgifname" type wireguard
+
 if ! [ -e /var/run/netns/"$nsname" ]; then
         ip netns add "$nsname"
 fi
 
-ip link set "$ifname" netns "$nsname"
+# Move the wireguard interface to the target namespace. See [Note POSIX
+# array trick] above.
+ip "$@" link set "$wgifname" netns "$nsname"
 
 # shellcheck disable=SC2002 # come on, < makes the pipeline read like shit
 cat /etc/wireguard/"$cfgname" \
         | grep -vi '^Address\|^DNS' \
-        | ip netns exec "$nsname"  wg setconf "$ifname" /dev/stdin
+        | ip netns exec "$nsname"  wg setconf "$wgifname" /dev/stdin
 
 addrs="$(sed -rn 's/^Address *= *([0-9a-fA-F:/.,]+) *$/\1/ip' < /etc/wireguard/"$cfgname")"
 
 ip -netns "$nsname" link set dev lo up
-ip -netns "$nsname" link set dev "$ifname" up
+ip -netns "$nsname" link set dev "$wgifname" up
 
 (
     IFS=','
     for addr in $addrs; do
-    	ip -netns "$nsname" addr add dev "$ifname" "$addr"
+    	ip -netns "$nsname" addr add dev "$wgifname" "$addr"
     done
 )
 
-ip -netns "$nsname" route add default dev "$ifname"
-ip -netns "$nsname" -6 route add default dev "$ifname"
-}
+ip -netns "$nsname" route add default dev "$wgifname"
+ip -netns "$nsname" -6 route add default dev "$wgifname"
+
+} # end init()
 
 
 set -e
