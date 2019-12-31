@@ -72,6 +72,12 @@ curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
             myipaddr=$res
     fi
 
+    oldpubkey="$(sed -rn 's/^PublicKey *= *([a-zA-Z0-9+/]{43}=) *$/\1/ip' <"$conf")"
+    if [ -n "$oldpubkey" ] && [ "$pubkey" != "$oldpubkey" ]; then
+            echo "WARNING: $hostname changed pubkey from '$oldpubkey' to '$pubkey'"
+            continue
+    fi
+
     mkdir -p /etc/wireguard/
     rm -f "${conf}.tmp"
     cat > "${conf}.tmp" <<-EOF
