@@ -40,7 +40,7 @@ This will ask you for your mullvad account number, so keep that ready.
 We're almost done, now we setup `resolv.conf` to prevent DNS leaks:
 
     $ mkdir -p /etc/netns/<myuser>
-    $ printf '%s\n' '# Mullvad DNS' 193.138.219.228 > /etc/netns/<myuser>/resolv.conf
+    $ printf '%s\n' '# Mullvad DNS' 10.64.0.1 > /etc/netns/<myuser>/resolv.conf
     $ chattr +i /etc/netns/<myuser>/resolv.conf
 
 I do `chattr +i` to prevent resolvconf from meddling with this config. I suppose
