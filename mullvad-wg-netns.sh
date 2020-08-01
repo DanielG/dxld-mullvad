@@ -26,6 +26,31 @@ if [ -z "$ACCOUNT" ]; then
         read -r ACCOUNT
 fi
 
+key="$(cat /etc/wireguard/mullvad-*.conf \
+    | sed -rn 's/^PrivateKey *= *([a-zA-Z0-9+/]{43}=) *$/\1/ip;T;q')"
+
+if [ -n "$key" ]; then
+        echo "[+] Using existing private key."
+else
+        echo "[+] Generating new private key."
+        key="$(wg genkey)"
+fi
+
+mypubkey="$(printf '%s\n' "$key" | wg pubkey)"
+
+echo "[+] Submitting wg private key to Mullvad API."
+res="$(curl -sSL https://api.mullvad.net/wg/ \
+        -d account="$ACCOUNT" \
+        --data-urlencode pubkey="$mypubkey")"
+if ! printf '%s\n' "$res" | grep -E '^[0-9a-f:/.,]+$' >/dev/null
+then
+        die "$res"
+fi
+myipaddr=$res
+
+echo "[+] Removing old /etc/wireguard/mullvad-*.conf files."
+rm /etc/wireguard/mullvad-*.conf || true
+
 echo "[+] Contacting Mullvad API for server locations."
 
 curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
@@ -43,39 +68,13 @@ curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
     addr="$ipaddr:51820"
 
     conf="/etc/wireguard/mullvad-${code}.conf"
-    if [ -z "$key" ] && [ -f "$conf" ]; then
-        key="$(sed -rn 's/^PrivateKey *= *([a-zA-Z0-9+/]{43}=) *$/\1/ip' <"$conf")"
 
-	if [ -n "$key" ]; then
-                echo "[+] Using existing private key."
-        fi
-    fi
-
-    if [ -z "$key" ]; then
-	    echo "[+] Generating new private key."
-	    key="$(wg genkey)"
-    fi
-
-    if [ -z "$mypubkey" ]; then
-            mypubkey="$(printf '%s\n' "$key" | wg pubkey)"
-    fi
-
-    if [ -z "$myipaddr" ]; then
-            echo "[+] Contacting Mullvad API."
-            res="$(curl -sSL https://api.mullvad.net/wg/ \
-                        -d account="$ACCOUNT" \
-                        --data-urlencode pubkey="$mypubkey")"
-            if ! printf '%s\n' "$res" | grep -E '^[0-9a-f:/.,]+$' >/dev/null
-            then
-                    die "$res"
+    if [ -f "$conf" ]; then
+            oldpubkey="$(sed -rn 's/^PublicKey *= *([a-zA-Z0-9+/]{43}=) *$/\1/ip' <"$conf")"
+            if [ -n "$oldpubkey" ] && [ "$pubkey" != "$oldpubkey" ]; then
+                    echo "WARNING: $hostname changed pubkey from '$oldpubkey' to '$pubkey'"
+                    continue
             fi
-            myipaddr=$res
-    fi
-
-    oldpubkey="$(sed -rn 's/^PublicKey *= *([a-zA-Z0-9+/]{43}=) *$/\1/ip' <"$conf")"
-    if [ -n "$oldpubkey" ] && [ "$pubkey" != "$oldpubkey" ]; then
-            echo "WARNING: $hostname changed pubkey from '$oldpubkey' to '$pubkey'"
-            continue
     fi
 
     mkdir -p /etc/wireguard/
