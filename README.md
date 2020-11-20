@@ -12,8 +12,8 @@ wireguard configs (generating privkey, uploading pubkey to mullvad API etc.). It
 also supports bringing up the wireguard interface at boot since `wg-quick` does
 not support netns or operating on a pre-existing wg interface.
 
-Setup
------
+Setup on Debian (sid)
+---------------------
 
 First we set up dependencies and libpam-net:
 
@@ -22,22 +22,26 @@ First we set up dependencies and libpam-net:
     $ addgroup --system usernet
     $ adduser <myuser> usernet
 
-Note: this currently depends on an
-[unmerged patch to libpam-net](https://github.com/rd235/libpam-net/pull/1) as
-well as the
-[unreleased Debian package](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=909908))
-for libpam-net, both of these things are currently being worked on.
+Note we need at least libpam-net 0.3, which just so happens recently came
+off the NEW queue and entered unstable. Yey!
     
-Now whenever `<myuser>` logs in, or a service is started as them, it will be
-placed in a netns (cf. ip-netns(8)) corresponding to their username.
+Now whenever `<myuser>` logs in, or a service is started as them, it will
+be placed in a netns (cf. ip-netns(8)) corresponding to their
+username. This netns is created if it doesn't already exist, but the
+intention is that you arrange for it to be setup during boot.
 
 Next we provision the wireguard configs:
 
     $ path/to/mullvad-wg-net.sh provision
 
-This will ask you for your mullvad account number, so keep that ready.
+This will ask you for your mullvad account number, so keep that ready. What
+this does is associate your mullvad account with the wg private key it
+generates.
 
-We're almost done, now we setup `resolv.conf` to prevent DNS leaks:
+Note: The account number is not stored on the system after provisioning.
+
+We're almost done, now we setup `resolv.conf` to prevent DNS leaks in the
+netns:
 
     $ mkdir -p /etc/netns/<myuser>
     $ printf '%s\n' '# Mullvad DNS' 10.64.0.1 > /etc/netns/<myuser>/resolv.conf
