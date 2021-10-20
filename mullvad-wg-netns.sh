@@ -93,14 +93,15 @@ curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
 done
 
 
-expiry="$(curl -s -X POST https://api.mullvad.net/rpc/ \
-     -H 'content-type: application/json;' \
-     --data '{ "jsonrpc": "2.0"
-             , "method": "get_expiry"
-             , "params": { "account_token": "'"$ACCOUNT"'" }
-             , "id": 1
-             }' \
-| jq -r '.result')"
+
+ACCOUNT_INFO=$(curl -s https://api.mullvad.net/www/accounts/"$ACCOUNT"/)
+TOKEN=$(printf '%s\n' "$ACCOUNT_INFO" | jq -r .auth_token)
+expiry=$(printf '%s\n' "$ACCOUNT_INFO" | jq -r .account.expires)
+
+#printf '%s\n' "$ACCOUNT_INFO" | jq .
+
+curl -s -X POST https://api.mullvad.net/www/expire-auth-token/ \
+     -H "Authorization: Token $TOKEN"
 
 printf '%s\n' "$expiry" > ~/.mullvad-expiry
 
