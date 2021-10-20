@@ -38,7 +38,7 @@ fi
 
 mypubkey="$(printf '%s\n' "$key" | wg pubkey)"
 
-echo "[+] Submitting wg private key to Mullvad API."
+echo "[+] Submitting wg public key to Mullvad API."
 res="$(curl -sSL https://api.mullvad.net/wg/ \
         -d account="$ACCOUNT" \
         --data-urlencode pubkey="$mypubkey")"
