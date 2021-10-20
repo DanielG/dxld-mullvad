@@ -22,8 +22,8 @@ First we set up dependencies and libpam-net:
     $ addgroup --system usernet
     $ adduser <myuser> usernet
 
-Note we need at least libpam-net 0.3, which just so happens recently came
-off the NEW queue and entered unstable. Yey!
+Note we need at least libpam-net 0.3, which is part of Debian bullseye
+now. Yey!
     
 Now whenever `<myuser>` logs in, or a service is started as them, it will
 be placed in a netns (cf. ip-netns(8)) corresponding to their
