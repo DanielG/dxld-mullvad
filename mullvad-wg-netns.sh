@@ -24,6 +24,7 @@ fi
 if [ -z "$ACCOUNT" ]; then
         printf '[?] Please enter your Mullvad account number: '
         read -r ACCOUNT
+        ACCOUNT=$(printf '%s' "$ACCOUNT" | tr -d '[[:space:]]')
 fi
 
 key="$(cat /etc/wireguard/mullvad-*.conf \
