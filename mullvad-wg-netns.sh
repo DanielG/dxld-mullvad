@@ -65,16 +65,17 @@ echo "[+] Contacting Mullvad API for server locations."
 curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
  | jq -r \
    '( .countries[]
-      | (.cities[]
-        | (.relays[]
-          | [.hostname, .public_key, .ipv4_addr_in])
+      | (.name as $country | .cities[]
+        | (.name as $city | .relays[]
+          | [$country, $city, .hostname, .public_key,
+             .ipv4_addr_in, .ipv6_addr_in])
       )
     )
     | flatten
     | join("\t")' \
- | while read -r hostname pubkey ipaddr; do
+ | while read -r country city hostname pubkey ip4addr ip6addr; do
     code="${hostname%-wireguard}"
-    addr="$ipaddr:51820"
+    addr="$ip4addr:51820" # TODO: allow v4/v6 choice
 
     conf="/etc/wireguard/mullvad-${code}.conf"
 
@@ -93,7 +94,7 @@ curl -LsS https://api.mullvad.net/public/relays/wireguard/v1/ \
 		PrivateKey = $key
 		Address = $myipaddr
 
-		[Peer]
+		[Peer] # $country, $city
 		PublicKey = $pubkey
 		Endpoint = $addr
 		AllowedIPs = 0.0.0.0/0, ::/0
