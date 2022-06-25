@@ -32,6 +32,14 @@ key="$(cat /etc/wireguard/mullvad-*.conf \
 
 if [ -n "$key" ]; then
         echo "[+] Using existing private key."
+        sleep 2
+        echo "[?] Are you absolutely sure? (Ctrl-C to cancel)"
+        sleep 1.5
+        echo "[?]   If you changed account number this will allow linking them!"
+        printf '[?] Press ENTER to confirm...'
+        read _
+        sleep 1
+        echo OK.
 else
         echo "[+] Generating new private key."
         key="$(wg genkey)"
