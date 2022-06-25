@@ -151,7 +151,9 @@ if [ -z "$parentns" ] && [ -e /sys/class/net/"$wgifname" ]; then
 fi
 
 # (2) parent namespace and
-if ip netns exec "$parentns" [ -e /sys/class/net/"$wgifname" ]; then
+if [ -n "$parentns" ] && ip netns exec "$parentns" \
+			    [ -e /sys/class/net/"$wgifname" ]
+then
         ip -netns "$parentns" link del dev "$wgifname"
 fi
 
