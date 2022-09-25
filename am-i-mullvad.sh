@@ -1,4 +1,7 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Copyright (C) 2018 Daniel Gröber
 
 not_on_mullvad() {
     echo>&2
