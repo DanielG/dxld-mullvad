@@ -19,11 +19,6 @@ warning() {
 }
 
 
-MULLVAD_ACCOUNT=
-if [ -r "$HOME"/.mullvad-account ]; then
-        MULLVAD_ACCOUNT="$(cat "$HOME"/.mullvad-account)"
-fi
-
 echo -n 'Checking Mullvad...'>&2
 
 # IP Leak check
