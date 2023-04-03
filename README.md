@@ -12,12 +12,12 @@ wireguard configs (generating privkey, uploading pubkey to mullvad API etc.). It
 also supports bringing up the wireguard interface at boot since `wg-quick` does
 not support netns or operating on a pre-existing wg interface.
 
-Setup on Debian (sid)
----------------------
+Setup on Debian bullseye or later
+---------------------------------
 
 First we set up dependencies and libpam-net:
 
-    $ apt-get install dateutils curl jq linux-headers-$(uname -r) wireguard-dkms wireguard-tools libpam-net
+    $ apt-get install dateutils curl jq wireguard-tools libpam-net
     $ pam-auth-update --enable libpam-net-usernet
     $ addgroup --system usernet
     $ adduser <myuser> usernet
@@ -68,7 +68,7 @@ systemd unit or something if you insist.
 Security
 --------
 
-In order to make sure this whole setup work and to prevent leaks if
+In order to make sure this whole setup works and to prevent leaks if
 something fails I like to check if connectivity is going through mullvad on
 login. The mullvad guys provide a convinient service for this:
 https://am.i.mullvad.net and I wrote a convinient shell wrapper for it:
